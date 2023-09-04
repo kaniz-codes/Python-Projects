@@ -1,0 +1,99 @@
+import pygame
+import random
+
+# Initialize pygame
+pygame.init()
+
+# Game constants
+WIDTH = 800
+HEIGHT = 600
+BALL_SPEED = 5
+PADDLE_SPEED = 5
+WHITE = (255, 255, 255)
+FPS = 60
+
+# Create the game window
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Pong Game")
+
+# Initialize paddles and ball
+playerA = pygame.Rect(50, HEIGHT // 2 - 50, 10, 100)
+playerB = pygame.Rect(WIDTH - 60, HEIGHT // 2 - 50, 10, 100)
+ball = pygame.Rect(WIDTH // 2 - 15, HEIGHT // 2 - 15, 30, 30)
+ball_speed_x = BALL_SPEED * random.choice((1, -1))
+ball_speed_y = BALL_SPEED * random.choice((1, -1))
+
+# Initialize scores
+scoreA = 0
+scoreB = 0
+font = pygame.font.Font(None, 36)
+
+# Game loop
+clock = pygame.time.Clock()
+running = True
+
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Update player paddles based on mouse position
+    playerA.y = pygame.mouse.get_pos()[1] - playerA.height // 2
+    playerB.y = pygame.mouse.get_pos()[1] - playerB.height // 2
+
+    # Update ball position
+    ball.x += ball_speed_x
+    ball.y += ball_speed_y
+
+    # Ball collisions with walls
+    if ball.top <= 0 or ball.bottom >= HEIGHT:
+        ball_speed_y *= -1
+    if ball.colliderect(playerA) or ball.colliderect(playerB):
+        ball_speed_x *= -1
+
+    # Scoring and game over
+    if ball.left <= 0:
+        scoreB += 1
+        ball = pygame.Rect(WIDTH // 2 - 15, HEIGHT // 2 - 15, 30, 30)
+        ball_speed_x *= random.choice((1, -1))
+        ball_speed_y *= random.choice((1, -1))
+    if ball.right >= WIDTH:
+        scoreA += 1
+        ball = pygame.Rect(WIDTH // 2 - 15, HEIGHT // 2 - 15, 30, 30)
+        ball_speed_x *= random.choice((1, -1))
+        ball_speed_y *= random.choice((1, -1))
+    if scoreA >= 3 or scoreB >= 3:  # Set a winning score
+        running = False
+
+    # Clear the screen
+    screen.fill((0, 0, 0))
+
+    # Draw paddles and ball
+    pygame.draw.rect(screen, WHITE, playerA)
+    pygame.draw.rect(screen, WHITE, playerB)
+    pygame.draw.ellipse(screen, WHITE, ball)
+
+    # Draw scores
+    score_display = font.render(f"{scoreA} - {scoreB}", True, WHITE)
+    screen.blit(score_display, (WIDTH // 2 - score_display.get_width() // 2, 20))
+
+    # Update the display
+    pygame.display.update()
+
+    # Cap the frame rate
+    clock.tick(FPS)
+
+# Display winner
+if scoreA > scoreB:
+    winner_text = "Player A wins!"
+else:
+    winner_text = "Player B wins!"
+winner_display = font.render(winner_text, True, WHITE)
+screen.blit(winner_display, (WIDTH // 2 - winner_display.get_width() // 2, HEIGHT // 2 - winner_display.get_height() // 2))
+pygame.display.update()
+
+# Wait for a while before quitting
+pygame.time.wait(3000)
+
+# Quit pygame
+pygame.quit()
